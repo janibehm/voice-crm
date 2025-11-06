@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
+    "@libsql/client": "^0.15.15",
+    "@prisma/adapter-libsql": "^6.19.0",
     "@prisma/client": "^6.19.0",
     "@twilio/voice-sdk": "^2.16.0",
     "next": "16.0.1",
