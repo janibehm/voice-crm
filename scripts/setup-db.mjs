@@ -1,7 +1,15 @@
 import { createClient } from '@libsql/client';
 
+const databaseUrl = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL;
+
+// Skip when we do not have a remote Turso URL (e.g. local dev build)
+if (!databaseUrl || databaseUrl.startsWith('file:') || databaseUrl.includes('${')) {
+  console.log('⚠️  Skipping Turso setup (no remote database URL provided)');
+  process.exit(0);
+}
+
 const client = createClient({
-  url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL,
+  url: databaseUrl,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
