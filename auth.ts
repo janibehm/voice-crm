@@ -2,10 +2,27 @@ import NextAuth from "next-auth"
 import Resend from "next-auth/providers/resend"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { PrismaClient } from "@prisma/client"
+import { PrismaLibSQL } from "@prisma/adapter-libsql"
 
-// Simple approach: Just use PrismaClient with DATABASE_URL
-// Turso connection string will work automatically
-const prisma = new PrismaClient()
+// Choose connection strategy based on environment
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
+
+if (!globalForPrisma.prisma) {
+  const tursoUrl = process.env.TURSO_DATABASE_URL
+  const tursoAuthToken = process.env.TURSO_AUTH_TOKEN
+
+  if (tursoUrl && process.env.NODE_ENV === "production") {
+    const adapter = new PrismaLibSQL({
+      url: tursoUrl,
+      authToken: tursoAuthToken,
+    })
+    globalForPrisma.prisma = new PrismaClient({ adapter })
+  } else {
+    globalForPrisma.prisma = new PrismaClient()
+  }
+}
+
+const prisma = globalForPrisma.prisma
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
